@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SecureTask</title>
+
+  <!-- ── FONTS Google ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- ── FONT AWESOME (icônes) ── -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- ── ANIMATE.CSS (animations) ── -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+  <!-- ── TON CSS ── -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="calendrier">
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🔐</div>
+    <div class="logo-text">Secure<span>Task</span></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+    <a href="taches.html" class="nav-item"><span class="nav-icon">📋</span> Mes Tâches</a>
+    <a href="tableau.html" class="nav-item"><span class="nav-icon">📊</span> Tableau Kanban</a>
+    <a href="calendrier.html" class="nav-item active"><span class="nav-icon">📅</span> Calendrier</a>
+    <div class="nav-section-label">Gestion</div>
+    <a href="equipe.html" class="nav-item"><span class="nav-icon">👥</span> Équipe</a>
+    <a href="nouvelle-tache.html" class="nav-item"><span class="nav-icon">➕</span> Nouvelle Tâche</a>
+    <div class="nav-section-label">Système</div>
+    <a href="parametres.html" class="nav-item"><span class="nav-icon">⚙️</span> Paramètres</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-card" id="logout-btn">
+      <div class="user-avatar" id="user-initials">KA</div>
+      <div class="user-info">
+        <div class="user-name" id="user-name">Karim Alaoui</div>
+        <div class="user-role" id="user-role">Lead Sécurité</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="main-content">
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      <div>
+        <div class="topbar-title">📅 Calendrier des échéances</div>
+        <div class="topbar-subtitle">Visualisez vos tâches SSI par date</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="dark-toggle" id="dark-toggle">🌙</button>
+      <a href="nouvelle-tache.html" class="btn btn-primary">➕ Nouvelle Tâche</a>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div class="calendar-wrapper">
+
+      <!-- Calendar nav -->
+      <div class="calendar-nav">
+        <button class="btn btn-secondary" id="cal-prev">← Précédent</button>
+        <div class="calendar-month" id="cal-month-title">Mai 2026</div>
+        <button class="btn btn-secondary" id="cal-next">Suivant →</button>
+      </div>
+
+      <!-- Day headers -->
+      <div class="calendar-grid" id="cal-header-row">
+        <div class="cal-header">Lun</div>
+        <div class="cal-header">Mar</div>
+        <div class="cal-header">Mer</div>
+        <div class="cal-header">Jeu</div>
+        <div class="cal-header">Ven</div>
+        <div class="cal-header">Sam</div>
+        <div class="cal-header">Dim</div>
+      </div>
+
+      <!-- Calendar cells -->
+      <div class="calendar-grid" id="cal-grid" style="margin-top:4px;"></div>
+
+      <!-- Legend -->
+      <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+          <span style="width:12px;height:12px;border-radius:3px;background:var(--critique-bg);border:1px solid var(--critique);display:inline-block;"></span>
+          Critique
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+          <span style="width:12px;height:12px;border-radius:3px;background:var(--elevee-bg);border:1px solid var(--elevee);display:inline-block;"></span>
+          Élevée
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+          <span style="width:12px;height:12px;border-radius:3px;background:var(--moyenne-bg);border:1px solid var(--moyenne);display:inline-block;"></span>
+          Moyenne
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+          <span style="width:12px;height:12px;border-radius:3px;background:var(--basse-bg);border:1px solid var(--basse);display:inline-block;"></span>
+          Basse
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+          💡 Cliquez sur un jour pour voir les tâches
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Day modal -->
+<div class="modal-overlay" id="day-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="day-modal-title">Tâches du jour</div>
+      <button class="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="day-modal-list" class="task-list"></div>
+      <div style="margin-top:16px;text-align:right;">
+        <a href="nouvelle-tache.html" class="btn btn-primary btn-sm">➕ Ajouter une tâche</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="main.js"></script>
+</body>
+</html>

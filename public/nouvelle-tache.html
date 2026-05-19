@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SecureTask</title>
+
+  <!-- ── FONTS Google ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- ── FONT AWESOME (icônes) ── -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- ── ANIMATE.CSS (animations) ── -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+  <!-- ── TON CSS ── -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="nouvelle-tache">
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🔐</div>
+    <div class="logo-text">Secure<span>Task</span></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+    <a href="taches.html" class="nav-item"><span class="nav-icon">📋</span> Mes Tâches</a>
+    <a href="tableau.html" class="nav-item"><span class="nav-icon">📊</span> Tableau Kanban</a>
+    <a href="calendrier.html" class="nav-item"><span class="nav-icon">📅</span> Calendrier</a>
+    <div class="nav-section-label">Gestion</div>
+    <a href="equipe.html" class="nav-item"><span class="nav-icon">👥</span> Équipe</a>
+    <a href="nouvelle-tache.html" class="nav-item active"><span class="nav-icon">➕</span> Nouvelle Tâche</a>
+    <div class="nav-section-label">Système</div>
+    <a href="parametres.html" class="nav-item"><span class="nav-icon">⚙️</span> Paramètres</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-card" id="logout-btn">
+      <div class="user-avatar" id="user-initials">KA</div>
+      <div class="user-info">
+        <div class="user-name" id="user-name">Karim Alaoui</div>
+        <div class="user-role" id="user-role">Lead Sécurité</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="main-content">
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      <div>
+        <div class="topbar-title">➕ Nouvelle Tâche</div>
+        <div class="topbar-subtitle">Créer une nouvelle tâche SSI</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="dark-toggle" id="dark-toggle">🌙</button>
+      <a href="taches.html" class="btn btn-secondary">← Retour</a>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div style="max-width:700px;margin:0 auto;">
+      <form id="new-task-form" class="card">
+
+        <!-- Title -->
+        <div class="form-group">
+          <label class="form-label" for="titre">
+            Titre de la tâche <span class="required">*</span>
+          </label>
+          <input type="text" id="titre" class="form-control" placeholder="Ex: Audit SQL Injection sur API client">
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label" for="description">Description</label>
+          <textarea id="description" class="form-control" placeholder="Décrivez les objectifs, le périmètre, les outils utilisés..."></textarea>
+        </div>
+
+        <!-- Priority + Deadline -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="priorite">Priorité</label>
+            <select id="priorite" class="form-control">
+              <option value="Critique">🔴 Critique</option>
+              <option value="Élevée">🟠 Élevée</option>
+              <option value="Moyenne" selected>🟢 Moyenne</option>
+              <option value="Basse">⚪ Basse</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="echeance">
+              Échéance <span class="required">*</span>
+            </label>
+            <input type="date" id="echeance" class="form-control">
+          </div>
+        </div>
+
+        <!-- Assignee + Status -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="assigne">Assigné à</label>
+            <select id="assigne" class="form-control">
+              <option value="Toi">👤 Toi</option>
+              <option value="Ahmad">Ahmad</option>
+              <option value="Sara">Sara</option>
+              <option value="Laila">Laila</option>
+              <option value="Non assigné">Non assigné</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Statut initial</label>
+            <div class="form-control" style="display:flex;align-items:center;color:var(--text-2);cursor:default;">
+              🟣 À faire (automatique)
+            </div>
+          </div>
+        </div>
+
+        <!-- Labels -->
+        <div class="form-group">
+          <label class="form-label">Labels</label>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" class="label-checkbox" value="Pentest"> 🔍 Pentest
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="label-checkbox" value="Audit ISO 27001"> 📜 Audit ISO 27001
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="label-checkbox" value="PSSI"> 🛡️ PSSI
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="label-checkbox" value="Incident"> 🚨 Incident
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="label-checkbox" value="Formation"> 🎓 Formation
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="label-checkbox" value="RGPD"> 🔒 RGPD
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="label-checkbox" value="Rapport"> 📊 Rapport
+            </label>
+          </div>
+        </div>
+
+        <!-- File -->
+        <div class="form-group">
+          <label class="form-label" for="fichier">Joindre un fichier (optionnel)</label>
+          <input type="file" id="fichier" class="form-control" style="padding:8px;">
+        </div>
+
+        <!-- Buttons -->
+        <div style="display:flex;gap:12px;justify-content:flex-end;padding-top:12px;border-top:1px solid var(--border);">
+          <a href="taches.html" class="btn btn-secondary">Annuler</a>
+          <button type="submit" class="btn btn-primary">
+            ✅ Créer la tâche
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </main>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="main.js"></script>
+</body>
+</html>

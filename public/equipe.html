@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SecureTask</title>
+
+  <!-- ── FONTS Google ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- ── FONT AWESOME (icônes) ── -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- ── ANIMATE.CSS (animations) ── -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+  <!-- ── TON CSS ── -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="equipe">
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🔐</div>
+    <div class="logo-text">Secure<span>Task</span></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+    <a href="taches.html" class="nav-item"><span class="nav-icon">📋</span> Mes Tâches</a>
+    <a href="tableau.html" class="nav-item"><span class="nav-icon">📊</span> Tableau Kanban</a>
+    <a href="calendrier.html" class="nav-item"><span class="nav-icon">📅</span> Calendrier</a>
+    <div class="nav-section-label">Gestion</div>
+    <a href="equipe.html" class="nav-item active"><span class="nav-icon">👥</span> Équipe</a>
+    <a href="nouvelle-tache.html" class="nav-item"><span class="nav-icon">➕</span> Nouvelle Tâche</a>
+    <div class="nav-section-label">Système</div>
+    <a href="parametres.html" class="nav-item"><span class="nav-icon">⚙️</span> Paramètres</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-card" id="logout-btn">
+      <div class="user-avatar" id="user-initials">KA</div>
+      <div class="user-info">
+        <div class="user-name" id="user-name">Karim Alaoui</div>
+        <div class="user-role" id="user-role">Lead Sécurité</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="main-content">
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      <div>
+        <div class="topbar-title">👥 Équipe SSI</div>
+        <div class="topbar-subtitle">Membres et rôles de l'équipe sécurité</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="dark-toggle" id="dark-toggle">🌙</button>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <!-- Roles legend -->
+    <div class="card" style="margin-bottom:24px;">
+      <div class="section-title" style="margin-bottom:12px;">🔑 Rôles et permissions</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <div style="padding:8px 14px;background:var(--critique-bg);border-radius:20px;font-size:13px;font-weight:600;color:var(--critique);">👑 Admin</div>
+        <div style="padding:8px 14px;background:var(--primary-light);border-radius:20px;font-size:13px;font-weight:600;color:var(--primary);">🛡️ Lead Sécurité</div>
+        <div style="padding:8px 14px;background:var(--moyenne-bg);border-radius:20px;font-size:13px;font-weight:600;color:#065f46;">👨‍💻 Ingénieur SSI</div>
+        <div style="padding:8px 14px;background:var(--basse-bg);border-radius:20px;font-size:13px;font-weight:600;color:var(--secondary);">👁️ Observateur</div>
+      </div>
+    </div>
+
+    <div id="team-grid" class="team-grid"></div>
+  </main>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="main.js"></script>
+</body>
+</html>

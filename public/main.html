@@ -1,0 +1,797 @@
+// ═══════════════════════════════════════════
+//  SecureTask — main.js
+// ═══════════════════════════════════════════
+
+const DEFAULT_TASKS = [
+  {
+    id: 1,
+    titre: "Audit SQL Injection sur API bancaire",
+    description: "Vérifier toutes les endpoints de l'API pour les vulnérabilités SQLi",
+    priorite: "Critique",
+    echeance: "2026-04-30",
+    assigneA: "Toi",
+    statut: "À faire",
+    labels: ["Pentest", "Audit ISO 27001"],
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 2,
+    titre: "Pentest API de paiement",
+    description: "Tester la résistance aux attaques XSS et CSRF",
+    priorite: "Élevée",
+    echeance: "2026-05-05",
+    assigneA: "Ahmad",
+    statut: "En cours",
+    labels: ["Pentest"],
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 3,
+    titre: "Rapport d'audit ISO 27001",
+    description: "Rédiger le rapport final pour le client banque",
+    priorite: "Moyenne",
+    echeance: "2026-05-10",
+    assigneA: "Toi",
+    statut: "Validé",
+    labels: ["Audit ISO 27001"],
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 4,
+    titre: "Checklist PSSI pour nouveau client",
+    description: "Remplir la checklist de conformité PSSI",
+    priorite: "Moyenne",
+    echeance: "2026-05-15",
+    assigneA: "Sara",
+    statut: "À faire",
+    labels: ["PSSI"],
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 5,
+    titre: "Formation sensibilisation sécurité (10 employés)",
+    description: "Organiser et animer la formation",
+    priorite: "Basse",
+    echeance: "2026-05-20",
+    assigneA: "Laila",
+    statut: "Terminé",
+    labels: ["Formation"],
+    createdAt: new Date().toISOString()
+  }
+];
+
+const DEFAULT_USER = {
+  email: "vous@securetask.ma",
+  nom: "Vous",
+  initiales: "YO",
+  role: "Lead Sécurité"
+};
+
+// ─── STORAGE ───
+function loadTasks() {
+  const raw = localStorage.getItem('securetask_tasks');
+  if (!raw) {
+    localStorage.setItem('securetask_tasks', JSON.stringify(DEFAULT_TASKS));
+    return DEFAULT_TASKS;
+  }
+  return JSON.parse(raw);
+}
+
+function saveTasks(tasks) {
+  localStorage.setItem('securetask_tasks', JSON.stringify(tasks));
+}
+
+function saveTask(task) {
+  const tasks = loadTasks();
+  task.id = Date.now();
+  task.createdAt = new Date().toISOString();
+  tasks.push(task);
+  saveTasks(tasks);
+  return task;
+}
+
+function deleteTask(id) {
+  let tasks = loadTasks();
+  tasks = tasks.filter(t => t.id !== id);
+  saveTasks(tasks);
+  showToast('Tâche supprimée.', 'info');
+}
+
+function updateTaskStatus(id, newStatus) {
+  const tasks = loadTasks();
+  const t = tasks.find(t => t.id === id);
+  if (t) {
+    t.statut = newStatus;
+    saveTasks(tasks);
+  }
+}
+
+function getNextStatus(current) {
+  const flow = ['À faire', 'En cours', 'Validé', 'Terminé'];
+  const idx = flow.indexOf(current);
+  return idx < flow.length - 1 ? flow[idx + 1] : current;
+}
+
+function filterTasks(priority, status, search) {
+  let tasks = loadTasks();
+  if (priority && priority !== 'Tout') tasks = tasks.filter(t => t.priorite === priority);
+  if (status && status !== 'Tout') tasks = tasks.filter(t => t.statut === status);
+  if (search) {
+    const q = search.toLowerCase();
+    tasks = tasks.filter(t => t.titre.toLowerCase().includes(q) || t.description.toLowerCase().includes(q));
+  }
+  return tasks;
+}
+
+// ─── USER ───
+function getUser() {
+  const raw = localStorage.getItem('securetask_user');
+  return raw ? JSON.parse(raw) : DEFAULT_USER;
+}
+
+function setUser(user) {
+  localStorage.setItem('securetask_user', JSON.stringify(user));
+}
+
+// ─── AUTH ───
+function isLoggedIn() {
+  return !!localStorage.getItem('securetask_logged');
+}
+
+function requireAuth() {
+  if (!isLoggedIn()) {
+    window.location.href = 'connexion.html';
+  }
+}
+
+function logout() {
+  localStorage.removeItem('securetask_logged');
+  window.location.href = 'connexion.html';
+}
+
+// ─── HELPERS ───
+function prioriteBadge(p) {
+  const map = {
+    'Critique': 'critique',
+    'Élevée': 'elevee',
+    'Moyenne': 'moyenne',
+    'Basse': 'basse'
+  };
+  const icons = { 'Critique': '🔴', 'Élevée': '🟠', 'Moyenne': '🟢', 'Basse': '⚪' };
+  const cls = map[p] || 'basse';
+  return `<span class="badge badge-${cls}">${icons[p] || ''} ${p}</span>`;
+}
+
+function statutBadge(s) {
+  const map = {
+    'À faire': 'afaire',
+    'En cours': 'encours',
+    'Validé': 'valide',
+    'Terminé': 'termine'
+  };
+  return `<span class="badge badge-${map[s] || 'afaire'}">${s}</span>`;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function initials(name) {
+  if (!name || name === 'Non assigné') return '?';
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function avatarColor(name) {
+  const colors = ['#2563eb', '#7c3aed', '#db2777', '#059669', '#d97706', '#dc2626'];
+  let hash = 0;
+  for (let c of (name || '')) hash = (hash + c.charCodeAt(0)) % colors.length;
+  return colors[hash];
+}
+
+function isNearDeadline(dateStr) {
+  if (!dateStr) return false;
+  const due = new Date(dateStr);
+  const now = new Date();
+  const diff = (due - now) / (1000 * 60 * 60 * 24);
+  return diff <= 3 && diff >= 0;
+}
+
+// ─── TOAST ───
+function showToast(msg, type = 'success') {
+  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+  const container = document.getElementById('toast-container') || createToastContainer();
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span>${icons[type]}</span> ${msg}`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(20px)';
+    toast.style.transition = 'all 0.3s';
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
+function createToastContainer() {
+  const el = document.createElement('div');
+  el.id = 'toast-container';
+  el.className = 'toast-container';
+  document.body.appendChild(el);
+  return el;
+}
+
+// ─── SIDEBAR ───
+function initSidebar() {
+  const user = getUser();
+  const initialsEl = document.getElementById('user-initials');
+  const nameEl = document.getElementById('user-name');
+  const roleEl = document.getElementById('user-role');
+  if (initialsEl) initialsEl.textContent = user.initiales || initials(user.nom);
+  if (nameEl) nameEl.textContent = user.nom;
+  if (roleEl) roleEl.textContent = user.role;
+
+  // Hamburger
+  const hamburger = document.getElementById('hamburger');
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.querySelector('.sidebar-overlay');
+
+  if (hamburger && sidebar) {
+    hamburger.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      overlay && overlay.classList.toggle('open');
+    });
+  }
+
+  if (overlay) {
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    });
+  }
+
+  // Dark mode
+  const darkToggle = document.getElementById('dark-toggle');
+  if (darkToggle) {
+    const isDark = localStorage.getItem('securetask_dark') === '1';
+    if (isDark) document.body.classList.add('dark-mode');
+    darkToggle.textContent = isDark ? '☀️' : '🌙';
+    darkToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      const now = document.body.classList.contains('dark-mode');
+      localStorage.setItem('securetask_dark', now ? '1' : '0');
+      darkToggle.textContent = now ? '☀️' : '🌙';
+    });
+  }
+
+  // Logout
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) logoutBtn.addEventListener('click', logout);
+}
+
+// ─── DASHBOARD ───
+function renderDashboard() {
+  const tasks = loadTasks();
+  const user = getUser();
+
+  const greeting = document.getElementById('greeting');
+  if (greeting) greeting.textContent = `Bonjour, ${user.nom} ! 👋`;
+
+  const critiques = tasks.filter(t => t.priorite === 'Critique' && t.statut !== 'Terminé');
+  const enCours = tasks.filter(t => t.statut === 'En cours');
+  const prochaines = tasks.filter(t => isNearDeadline(t.echeance) && t.statut !== 'Terminé');
+
+  setEl('stat-critique', critiques.length);
+  setEl('stat-encours', enCours.length);
+  setEl('stat-echeance', prochaines.length);
+
+  const subEl = document.getElementById('greeting-sub');
+  if (subEl) {
+    const crit = critiques.length;
+    subEl.textContent = crit > 0
+      ? `Tu as ${crit} tâche${crit > 1 ? 's' : ''} critique${crit > 1 ? 's' : ''} à traiter.`
+      : "Tout est sous contrôle aujourd'hui.";
+  }
+
+  // My tasks
+  const myTasks = tasks.filter(t => (t.assigneA === 'Toi' || t.assigneA === user.nom) && t.statut !== 'Terminé').slice(0, 5);
+  const listEl = document.getElementById('my-tasks-list');
+  if (listEl) {
+    if (myTasks.length === 0) {
+      listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">🎉</div><p>Aucune tâche assignée !</p></div>';
+    } else {
+      listEl.innerHTML = myTasks.map(t => `
+        <div class="task-item" onclick="window.location.href='taches.html'">
+          <div class="priority-dot ${prioriteClass(t.priorite)}"></div>
+          <div class="task-info">
+            <div class="task-title">${t.titre}</div>
+            <div class="task-meta">${t.statut} · ${t.labels.join(', ')}</div>
+          </div>
+          ${prioriteBadge(t.priorite)}
+          <div class="task-deadline">${formatDate(t.echeance)}</div>
+        </div>
+      `).join('');
+    }
+  }
+
+  // Recent all tasks
+  const recentEl = document.getElementById('recent-tasks-list');
+  if (recentEl) {
+    const recent = tasks.slice(-3).reverse();
+    recentEl.innerHTML = recent.map(t => `
+      <div class="task-item">
+        <div class="priority-dot ${prioriteClass(t.priorite)}"></div>
+        <div class="task-info">
+          <div class="task-title">${t.titre}</div>
+          <div class="task-meta">Assigné à ${t.assigneA}</div>
+        </div>
+        ${statutBadge(t.statut)}
+        <div class="task-deadline">${formatDate(t.echeance)}</div>
+      </div>
+    `).join('');
+  }
+}
+
+function setEl(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function prioriteClass(p) {
+  return { 'Critique': 'critique', 'Élevée': 'elevee', 'Moyenne': 'moyenne', 'Basse': 'basse' }[p] || 'basse';
+}
+
+// ─── KANBAN ───
+function renderKanban() {
+  const tasks = loadTasks();
+  const columns = ['À faire', 'En cours', 'Validé', 'Terminé'];
+
+  columns.forEach(col => {
+    const colId = colIdMap(col);
+    const el = document.getElementById(`col-${colId}`);
+    if (!el) return;
+
+    const colTasks = tasks.filter(t => t.statut === col);
+
+    // Update count
+    const countEl = document.getElementById(`count-${colId}`);
+    if (countEl) countEl.textContent = colTasks.length;
+
+    el.innerHTML = colTasks.map(t => `
+      <div class="kanban-card" draggable="true" data-id="${t.id}" data-statut="${t.statut}">
+        <div class="card-priority">
+          ${prioriteBadge(t.priorite)}
+          <button class="card-advance-btn" onclick="advanceTask(${t.id})" title="Avancer la tâche">⟳</button>
+        </div>
+        <div class="card-title">${t.titre}</div>
+        ${t.labels.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">${t.labels.map(l => `<span style="font-size:10px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:2px 7px;color:var(--text-2);">${l}</span>`).join('')}</div>` : ''}
+        <div class="card-footer">
+          <div class="card-assignee">
+            <div class="mini-avatar" style="background:${avatarColor(t.assigneA)}">${initials(t.assigneA)}</div>
+            ${t.assigneA}
+          </div>
+          <div class="card-date">${formatDate(t.echeance)}</div>
+        </div>
+      </div>
+    `).join('');
+
+    // Drag events on cards
+    el.querySelectorAll('.kanban-card').forEach(card => {
+      card.addEventListener('dragstart', onDragStart);
+      card.addEventListener('dragend', onDragEnd);
+    });
+  });
+}
+
+function colIdMap(col) {
+  return { 'À faire': 'afaire', 'En cours': 'encours', 'Validé': 'valide', 'Terminé': 'termine' }[col] || col;
+}
+
+let draggedId = null;
+
+function onDragStart(e) {
+  draggedId = parseInt(e.currentTarget.dataset.id);
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function onDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+}
+
+function initDragDrop() {
+  document.querySelectorAll('.kanban-cards').forEach(zone => {
+    zone.addEventListener('dragover', e => {
+      e.preventDefault();
+      zone.closest('.kanban-column').classList.add('drag-over');
+    });
+    zone.addEventListener('dragleave', e => {
+      zone.closest('.kanban-column').classList.remove('drag-over');
+    });
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      const col = zone.closest('.kanban-column');
+      col.classList.remove('drag-over');
+      const newStatus = col.dataset.statut;
+      if (draggedId && newStatus) {
+        updateTaskStatus(draggedId, newStatus);
+        renderKanban();
+        showToast(`Tâche déplacée vers "${newStatus}"`, 'success');
+      }
+    });
+  });
+}
+
+function advanceTask(id) {
+  const tasks = loadTasks();
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  const next = getNextStatus(t.statut);
+  if (next !== t.statut) {
+    updateTaskStatus(id, next);
+    renderKanban();
+    showToast(`Tâche avancée → ${next}`, 'success');
+  } else {
+    showToast('La tâche est déjà terminée.', 'info');
+  }
+}
+
+// ─── TASK LIST ───
+function renderTaskList(tasks) {
+  const tbody = document.getElementById('tasks-tbody');
+  if (!tbody) return;
+
+  if (tasks.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-3);">Aucune tâche trouvée.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = tasks.map(t => `
+    <tr>
+      <td>
+        <div class="task-name">${t.titre}</div>
+        <div style="font-size:12px;color:var(--text-3);">${t.labels.join(', ')}</div>
+      </td>
+      <td>${prioriteBadge(t.priorite)}</td>
+      <td style="font-family:var(--mono);font-size:13px;${isNearDeadline(t.echeance) ? 'color:var(--critique);font-weight:600;' : ''}">${formatDate(t.echeance)}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="mini-avatar" style="background:${avatarColor(t.assigneA)}">${initials(t.assigneA)}</div>
+          ${t.assigneA}
+        </div>
+      </td>
+      <td>${statutBadge(t.statut)}</td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-secondary btn-sm" onclick="viewTask(${t.id})">Voir</button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDelete(${t.id})">Supprimer</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function viewTask(id) {
+  const tasks = loadTasks();
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  const modal = document.getElementById('task-modal');
+  if (!modal) return;
+  document.getElementById('modal-task-title').textContent = t.titre;
+  document.getElementById('modal-task-desc').textContent = t.description || 'Aucune description.';
+  document.getElementById('modal-task-info').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
+      <div><b style="font-size:12px;color:var(--text-3);">PRIORITÉ</b><br>${prioriteBadge(t.priorite)}</div>
+      <div><b style="font-size:12px;color:var(--text-3);">STATUT</b><br>${statutBadge(t.statut)}</div>
+      <div><b style="font-size:12px;color:var(--text-3);">ÉCHÉANCE</b><br><span style="font-family:var(--mono);font-size:13px;">${formatDate(t.echeance)}</span></div>
+      <div><b style="font-size:12px;color:var(--text-3);">ASSIGNÉ À</b><br>${t.assigneA}</div>
+      ${t.labels.length ? `<div style="grid-column:1/-1"><b style="font-size:12px;color:var(--text-3);">LABELS</b><br><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">${t.labels.map(l => `<span style="font-size:12px;background:var(--primary-light);color:var(--primary);padding:3px 10px;border-radius:20px;">${l}</span>`).join('')}</div></div>` : ''}
+    </div>
+  `;
+  modal.classList.add('open');
+}
+
+function confirmDelete(id) {
+  if (confirm('Supprimer cette tâche ? Cette action est irréversible.')) {
+    deleteTask(id);
+    const tasks = filterTasks(
+      document.getElementById('filter-priorite')?.value,
+      document.getElementById('filter-statut')?.value,
+      document.getElementById('filter-search')?.value
+    );
+    renderTaskList(tasks);
+  }
+}
+
+function initTaskListFilters() {
+  const go = () => {
+    const tasks = filterTasks(
+      document.getElementById('filter-priorite')?.value,
+      document.getElementById('filter-statut')?.value,
+      document.getElementById('filter-search')?.value
+    );
+    renderTaskList(tasks);
+  };
+  document.getElementById('filter-priorite')?.addEventListener('change', go);
+  document.getElementById('filter-statut')?.addEventListener('change', go);
+  document.getElementById('filter-search')?.addEventListener('input', go);
+}
+
+// ─── CALENDAR ───
+let calYear, calMonth;
+
+function renderCalendar(year, month) {
+  const tasks = loadTasks();
+  const now = new Date();
+  calYear = year ?? now.getFullYear();
+  calMonth = month ?? now.getMonth();
+
+  const monthNames = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+
+  const titleEl = document.getElementById('cal-month-title');
+  if (titleEl) titleEl.textContent = `${monthNames[calMonth]} ${calYear}`;
+
+  const grid = document.getElementById('cal-grid');
+  if (!grid) return;
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const prevDays = new Date(calYear, calMonth, 0).getDate();
+
+  let html = '';
+  const startOffset = (firstDay === 0 ? 6 : firstDay - 1); // Mon-start
+
+  // Previous month days
+  for (let i = startOffset - 1; i >= 0; i--) {
+    const d = prevDays - i;
+    html += `<div class="cal-day other-month"><div class="cal-day-num">${d}</div></div>`;
+  }
+
+  // Current month
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayTasks = tasks.filter(t => t.echeance === dateStr);
+    const isToday = d === now.getDate() && calMonth === now.getMonth() && calYear === now.getFullYear();
+
+    html += `<div class="cal-day${isToday ? ' today' : ''}" onclick="openDayModal('${dateStr}')">
+      <div class="cal-day-num">${d}</div>
+      ${dayTasks.slice(0, 2).map(t => `<span class="cal-task-pill ${prioriteClass(t.priorite)}">${t.titre}</span>`).join('')}
+      ${dayTasks.length > 2 ? `<span style="font-size:10px;color:var(--text-3);">+${dayTasks.length - 2} autres</span>` : ''}
+    </div>`;
+  }
+
+  // Fill remaining
+  const total = startOffset + daysInMonth;
+  const remaining = (7 - (total % 7)) % 7;
+  for (let d = 1; d <= remaining; d++) {
+    html += `<div class="cal-day other-month"><div class="cal-day-num">${d}</div></div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+function openDayModal(dateStr) {
+  const tasks = loadTasks().filter(t => t.echeance === dateStr);
+  const modal = document.getElementById('day-modal');
+  const title = document.getElementById('day-modal-title');
+  const list = document.getElementById('day-modal-list');
+
+  if (!modal) return;
+
+  const d = new Date(dateStr + 'T00:00:00');
+  title.textContent = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  if (tasks.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><p>Aucune tâche ce jour.</p></div>';
+  } else {
+    list.innerHTML = tasks.map(t => `
+      <div class="task-item">
+        <div class="priority-dot ${prioriteClass(t.priorite)}"></div>
+        <div class="task-info">
+          <div class="task-title">${t.titre}</div>
+          <div class="task-meta">${t.assigneA} · ${t.labels.join(', ')}</div>
+        </div>
+        ${prioriteBadge(t.priorite)}
+      </div>
+    `).join('');
+  }
+
+  modal.classList.add('open');
+}
+
+// ─── NOUVELLE TÂCHE ───
+function initNewTaskForm() {
+  // Checkbox labels
+  document.querySelectorAll('.checkbox-label').forEach(label => {
+    label.addEventListener('click', () => {
+      const input = label.querySelector('input');
+      input.checked = !input.checked;
+      label.classList.toggle('checked', input.checked);
+    });
+  });
+
+  const form = document.getElementById('new-task-form');
+  if (!form) return;
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+
+    const titre = document.getElementById('titre')?.value.trim();
+    const echeance = document.getElementById('echeance')?.value;
+
+    let valid = true;
+    if (!titre) {
+      document.getElementById('titre')?.classList.add('error');
+      valid = false;
+    } else {
+      document.getElementById('titre')?.classList.remove('error');
+    }
+    if (!echeance) {
+      document.getElementById('echeance')?.classList.add('error');
+      valid = false;
+    } else {
+      document.getElementById('echeance')?.classList.remove('error');
+    }
+
+    if (!valid) { showToast('Veuillez remplir les champs obligatoires.', 'error'); return; }
+
+    const labels = Array.from(document.querySelectorAll('.label-checkbox:checked')).map(i => i.value);
+
+    const task = {
+      titre,
+      description: document.getElementById('description')?.value || '',
+      priorite: document.getElementById('priorite')?.value || 'Moyenne',
+      echeance,
+      assigneA: document.getElementById('assigne')?.value || 'Non assigné',
+      statut: 'À faire',
+      labels
+    };
+
+    saveTask(task);
+    localStorage.setItem('securetask_success', 'Tâche créée avec succès !');
+    window.location.href = 'taches.html';
+  });
+}
+
+// ─── LOGIN ───
+function initLogin() {
+  const form = document.getElementById('login-form');
+  if (!form) return;
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const email = document.getElementById('email')?.value.trim();
+    const password = document.getElementById('password')?.value;
+    const errEl = document.getElementById('login-error');
+
+    if (email === 'hind_rahioui@securetask.ma' && password === 'password123') {
+      setUser({ email, nom: 'Hind Rahioui', initiales: 'KA', role: 'Lead Sécurité' });
+      localStorage.setItem('securetask_logged', '1');
+      window.location.href = 'index.html';
+    } else {
+      if (errEl) {
+        errEl.style.display = 'block';
+        errEl.textContent = 'Email ou mot de passe incorrect. (test@securetask.ma / password123)';
+      }
+    }
+  });
+}
+
+// ─── SUCCESS TOAST ───
+function checkSuccessMessage() {
+  const msg = localStorage.getItem('securetask_success');
+  if (msg) {
+    localStorage.removeItem('securetask_success');
+    setTimeout(() => showToast(msg, 'success'), 300);
+  }
+}
+
+// ─── MODAL HELPERS ───
+function initModals() {
+  document.querySelectorAll('.modal-close, .modal-cancel').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.closest('.modal-overlay')?.classList.remove('open');
+    });
+  });
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+  });
+}
+
+// ─── TEAM ───
+function renderTeam() {
+  const tasks = loadTasks();
+  const members = [
+    { nom: 'Vous', role: 'Lead Sécurité', email: 'vous@securetask.ma', color: '#2563eb' },
+    { nom: 'Ahmad', role: 'Ingénieur SSI', email: 'ahmad@securetask.ma', color: '#7c3aed' },
+    { nom: 'Sara', role: 'Ingénieur SSI', email: 'sara@securetask.ma', color: '#db2777' },
+    { nom: 'Laila', role: 'Observateur', email: 'laila@securetask.ma', color: '#059669' },
+  ];
+
+  const grid = document.getElementById('team-grid');
+  if (!grid) return;
+
+  grid.innerHTML = members.map(m => {
+    const memberTasks = tasks.filter(t => t.assigneA === m.nom || (m.nom === 'Vous' && t.assigneA === 'Toi'));
+    const open = memberTasks.filter(t => t.statut !== 'Terminé').length;
+    return `
+      <div class="team-card">
+        <div class="team-avatar" style="background:${m.color}">${initials(m.nom)}</div>
+        <div class="team-name">${m.nom}</div>
+        <div class="team-role">${m.role}</div>
+        <div class="team-tasks">
+          ${open} tâche${open !== 1 ? 's' : ''} en cours · ${memberTasks.length} total
+        </div>
+        <div style="margin-top:8px;">
+          <span style="font-size:11px;color:var(--text-3);">${m.email}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ─── INIT ───
+document.addEventListener('DOMContentLoaded', () => {
+  // Apply dark mode
+  if (localStorage.getItem('securetask_dark') === '1') {
+    document.body.classList.add('dark-mode');
+  }
+
+  const page = document.body.dataset.page;
+
+  if (page === 'login') {
+    initLogin();
+    return;
+  }
+
+  requireAuth();
+  initSidebar();
+  initModals();
+  checkSuccessMessage();
+
+  if (page === 'dashboard') {
+    renderDashboard();
+  }
+
+  if (page === 'kanban') {
+    renderKanban();
+    initDragDrop();
+  }
+
+  if (page === 'taches') {
+    renderTaskList(loadTasks());
+    initTaskListFilters();
+
+    const taskModal = document.getElementById('task-modal');
+    if (taskModal) {
+      window.closeTaskModal = () => taskModal.classList.remove('open');
+    }
+  }
+
+  if (page === 'calendrier') {
+    renderCalendar();
+
+    document.getElementById('cal-prev')?.addEventListener('click', () => {
+      calMonth--;
+      if (calMonth < 0) { calMonth = 11; calYear--; }
+      renderCalendar(calYear, calMonth);
+    });
+
+    document.getElementById('cal-next')?.addEventListener('click', () => {
+      calMonth++;
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      renderCalendar(calYear, calMonth);
+    });
+  }
+
+  if (page === 'nouvelle-tache') {
+    initNewTaskForm();
+  }
+
+  if (page === 'equipe') {
+    renderTeam();
+  }
+});

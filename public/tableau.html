@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SecureTask</title>
+
+  <!-- ── FONTS Google ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- ── FONT AWESOME (icônes) ── -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- ── ANIMATE.CSS (animations) ── -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+  <!-- ── TON CSS ── -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="kanban">
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🔐</div>
+    <div class="logo-text">Secure<span>Task</span></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+    <a href="taches.html" class="nav-item"><span class="nav-icon">📋</span> Mes Tâches</a>
+    <a href="tableau.html" class="nav-item active"><span class="nav-icon">📊</span> Tableau Kanban</a>
+    <a href="calendrier.html" class="nav-item"><span class="nav-icon">📅</span> Calendrier</a>
+    <div class="nav-section-label">Gestion</div>
+    <a href="equipe.html" class="nav-item"><span class="nav-icon">👥</span> Équipe</a>
+    <a href="nouvelle-tache.html" class="nav-item"><span class="nav-icon">➕</span> Nouvelle Tâche</a>
+    <div class="nav-section-label">Système</div>
+    <a href="parametres.html" class="nav-item"><span class="nav-icon">⚙️</span> Paramètres</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-card" id="logout-btn">
+      <div class="user-avatar" id="user-initials">KA</div>
+      <div class="user-info">
+        <div class="user-name" id="user-name">Karim Alaoui</div>
+        <div class="user-role" id="user-role">Lead Sécurité</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="main-content">
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      <div>
+        <div class="topbar-title">📊 Tableau Kanban</div>
+        <div class="topbar-subtitle">Vue d'ensemble des tâches par statut</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="dark-toggle" id="dark-toggle">🌙</button>
+      <a href="nouvelle-tache.html" class="btn btn-primary">➕ Nouvelle Tâche</a>
+    </div>
+  </header>
+
+  <main class="page-content" style="overflow-x:auto;">
+    <div class="kanban-board">
+
+      <!-- À FAIRE -->
+      <div class="kanban-column" data-statut="À faire">
+        <div class="column-header">
+          <div class="column-title">
+            <span style="width:10px;height:10px;border-radius:50%;background:#7c3aed;display:inline-block;"></span>
+            À FAIRE
+          </div>
+          <span class="column-count" id="count-afaire">0</span>
+        </div>
+        <div class="kanban-cards" id="col-afaire"></div>
+        <button class="kanban-add-btn" onclick="window.location.href='nouvelle-tache.html'">
+          ＋ Ajouter une tâche
+        </button>
+      </div>
+
+      <!-- EN COURS -->
+      <div class="kanban-column" data-statut="En cours">
+        <div class="column-header">
+          <div class="column-title">
+            <span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
+            EN COURS
+          </div>
+          <span class="column-count" id="count-encours">0</span>
+        </div>
+        <div class="kanban-cards" id="col-encours"></div>
+        <button class="kanban-add-btn" onclick="window.location.href='nouvelle-tache.html'">
+          ＋ Ajouter une tâche
+        </button>
+      </div>
+
+      <!-- VALIDÉ -->
+      <div class="kanban-column" data-statut="Validé">
+        <div class="column-header">
+          <div class="column-title">
+            <span style="width:10px;height:10px;border-radius:50%;background:#2563eb;display:inline-block;"></span>
+            VALIDÉ
+          </div>
+          <span class="column-count" id="count-valide">0</span>
+        </div>
+        <div class="kanban-cards" id="col-valide"></div>
+        <button class="kanban-add-btn" onclick="window.location.href='nouvelle-tache.html'">
+          ＋ Ajouter une tâche
+        </button>
+      </div>
+
+      <!-- TERMINÉ -->
+      <div class="kanban-column" data-statut="Terminé">
+        <div class="column-header">
+          <div class="column-title">
+            <span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block;"></span>
+            TERMINÉ
+          </div>
+          <span class="column-count" id="count-termine">0</span>
+        </div>
+        <div class="kanban-cards" id="col-termine"></div>
+        <button class="kanban-add-btn" onclick="window.location.href='nouvelle-tache.html'">
+          ＋ Ajouter une tâche
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Legend -->
+    <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap;">
+      <div style="font-size:12px;color:var(--text-3);">💡 Astuce :</div>
+      <div style="font-size:12px;color:var(--text-3);">🖱️ Glissez-déposez les cartes entre colonnes</div>
+      <div style="font-size:12px;color:var(--text-3);">⟳ Cliquez pour avancer une tâche</div>
+    </div>
+  </main>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="main.js"></script>
+</body>
+</html>

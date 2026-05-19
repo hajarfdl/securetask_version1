@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SecureTask</title>
+
+  <!-- ── FONTS Google ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- ── FONT AWESOME (icônes) ── -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- ── ANIMATE.CSS (animations) ── -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+  <!-- ── TON CSS ── -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="taches">
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🔐</div>
+    <div class="logo-text">Secure<span>Task</span></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+    <a href="taches.html" class="nav-item active"><span class="nav-icon">📋</span> Mes Tâches</a>
+    <a href="tableau.html" class="nav-item"><span class="nav-icon">📊</span> Tableau Kanban</a>
+    <a href="calendrier.html" class="nav-item"><span class="nav-icon">📅</span> Calendrier</a>
+    <div class="nav-section-label">Gestion</div>
+    <a href="equipe.html" class="nav-item"><span class="nav-icon">👥</span> Équipe</a>
+    <a href="nouvelle-tache.html" class="nav-item"><span class="nav-icon">➕</span> Nouvelle Tâche</a>
+    <div class="nav-section-label">Système</div>
+    <a href="parametres.html" class="nav-item"><span class="nav-icon">⚙️</span> Paramètres</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-card" id="logout-btn">
+      <div class="user-avatar" id="user-initials">KA</div>
+      <div class="user-info">
+        <div class="user-name" id="user-name">Karim Alaoui</div>
+        <div class="user-role" id="user-role">Lead Sécurité</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="main-content">
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      <div>
+        <div class="topbar-title">📋 Toutes les tâches</div>
+        <div class="topbar-subtitle">Gérer et filtrer les tâches SSI</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="dark-toggle" id="dark-toggle">🌙</button>
+      <a href="nouvelle-tache.html" class="btn btn-primary">➕ Nouvelle Tâche</a>
+    </div>
+  </header>
+
+  <main class="page-content">
+
+    <!-- FILTERS -->
+    <div class="filters-bar">
+      <select id="filter-priorite" class="filter-select">
+        <option value="Tout">🔽 Priorité</option>
+        <option value="Critique">🔴 Critique</option>
+        <option value="Élevée">🟠 Élevée</option>
+        <option value="Moyenne">🟢 Moyenne</option>
+        <option value="Basse">⚪ Basse</option>
+      </select>
+      <select id="filter-statut" class="filter-select">
+        <option value="Tout">🔽 Statut</option>
+        <option value="À faire">À faire</option>
+        <option value="En cours">En cours</option>
+        <option value="Validé">Validé</option>
+        <option value="Terminé">Terminé</option>
+      </select>
+      <input type="text" id="filter-search" class="filter-input" placeholder="🔍 Rechercher par titre...">
+    </div>
+
+    <!-- TABLE -->
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Titre</th>
+            <th>Priorité</th>
+            <th>Échéance</th>
+            <th>Assigné à</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tasks-tbody"></tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<!-- Task detail modal -->
+<div class="modal-overlay" id="task-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-task-title">Détail de la tâche</div>
+      <button class="modal-close" onclick="document.getElementById('task-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="modal-task-desc" style="color:var(--text-2);font-size:14px;line-height:1.6;"></p>
+      <div id="modal-task-info"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="main.js"></script>
+</body>
+</html>
