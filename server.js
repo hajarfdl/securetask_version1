@@ -17,7 +17,7 @@ const pool = new Pool({
         rejectUnauthorized: false,
     },
 });
-
+console.log('DB URL:', process.env.DATABASE_URL)
 pool.connect()
     .then(() => console.log('✅ Connected to Neon PostgreSQL'))
     .catch(err => console.error('❌ Database connection error:', err));
